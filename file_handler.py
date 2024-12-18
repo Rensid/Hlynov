@@ -12,12 +12,14 @@ class File:
         self.file: str = file
         self.filename: str = os.path.basename(self.file)
         self.directory: str = os.path.dirname(self.file)
-        self.encoding: Optional[str] = self.get_encoding(self.file)
+        self.encoding: Optional[str] = self.get_encoding(self.file) or 'UTF-8'
 
     def get_encoding(self, file: str) -> Optional[str]:
+        # пытается определить кодировку файла с помощью регулярного выражения
         try:
             with open(file, "rb") as file:
                 text = file.readline()
+                # ищет первое вхождение после encoding между ковычек
                 match = re.search(br'encoding=["\'](.*?)["\']', text)
                 return match.group(1).decode("ascii") if match else None
         except Exception:
@@ -46,6 +48,7 @@ class IncomingReestr(File):
         self.fill_data()
 
     def _set_date(self) -> str:
+        # вытаскивает дату из файла по ключу ДатаФайл, где бы он не находился
         try:
             date = self.root.find(".//ДатаФайл").text
             datetime.strptime(date, "%d.%m.%Y")
@@ -55,13 +58,13 @@ class IncomingReestr(File):
             raise ValueError("Invalid date format")
 
     def _find_payer_parametr(self, payer: ET.Element, key: str) -> str:
+        # ищет тег по ключу. если находит, то возвращает его, а если нет, то пустую строку
         return payer.find(key).text if payer.find(key) is not None else ''
 
     def set_payers(self):
         self.payers = []
         try:
             for index, payer in enumerate(self.root.findall("ИнфЧаст/Плательщик")):
-
                 bank_book = self._find_payer_parametr(payer, "ЛицСч")
                 full_name = self._find_payer_parametr(payer, "ФИО")
                 address = self._find_payer_parametr(payer, "Адрес")
@@ -69,7 +72,8 @@ class IncomingReestr(File):
                 summa = self._find_payer_parametr(payer, "Сумма")
 
                 payer = Payer(bank_book, full_name, address, period, summa)
-                if not all([payer.bank_book, payer.period, payer.summa]):
+                # проверяет на отсутствие ключевые элементы
+                if not all([payer.bank_book, payer.period]) or payer.summa is None:
                     logging.error(
                         f"Строка номер {index} не имеет одного или более ключевых реквизитов")
                     continue
@@ -120,13 +124,21 @@ class Payer:
             raise
 
     def validate_summa(self, summa):
+        # функция сначала проверяет не пустое ли значение было передано
+        # если значение пустое, то вернет пустую строку, что нужно будет для определения пропуска строки или просто записи пустого значения
+        # если значение не пустое, то пытается преобразовать его в число
+        # если преобразование завершается успешно, то возвращает число с двумя знаками после запятой
+        # если преобразование не удалось, то выводится сообщение об ошибке и возвращается пустая строка
+        # таким образом мы обрабаатываем случай, когда сумма не указана или указана неправильно
         try:
-            summa = float(summa)
-            if summa <= 0:
-                logging.error(
-                    f"Сумма должна быть положительной: {summa} у пользователя {self.full_name}")
-                return None
-            return f"{summa:.2f}"
+            if summa:
+                summa = float(summa)
+                if summa <= 0:
+                    logging.error(
+                        f"Сумма должна быть положительной: {summa} у пользователя {self.full_name}")
+                    return None
+                return f"{summa:.2f}"
+            return ''
         except ValueError:
             logging.error(
                 f"Неверный формат суммы: {summa} у пользователя {self.full_name}")

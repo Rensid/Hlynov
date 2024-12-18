@@ -9,17 +9,17 @@ from file_handler import IncomingReestr
 from log import LogConfig
 
 
-def move_to(file: str, new_path: Literal['arh', 'bad']) -> None:
-    match new_path:
+def move_to(file: str, subdir: str) -> None:
+    match subdir:
         case 'arh':
             base_dir = os.path.dirname(file)
-            arh_dir = os.path.join(base_dir, 'arh')
+            arh_dir = os.path.join(base_dir, subdir)
             os.makedirs(arh_dir, exist_ok=True)
             shutil.move(file, os.path.join(arh_dir, os.path.basename(file)))
 
         case 'bad':
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            bad_dir = os.path.join(base_dir, 'bad')
+            bad_dir = os.path.join(base_dir, subdir)
             os.makedirs(bad_dir, exist_ok=True)
             shutil.move(file, os.path.join(bad_dir, os.path.basename(file)))
         case _:
