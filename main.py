@@ -65,42 +65,5 @@ def main():
         print("Не указан путь к файлу. Укажите путь через параметр -f")
 
 
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description="Process an XML file.")
-#     parser.add_argument("-f", type=str)
-#     args = parser.parse_args()
-#     if args.f:
-#         LogConfig(args.f)
-#         if os.path.isfile(args.f):
-#             if args.f.endswith(".xml"):
-#                 reestr = IncomingReestr(args.f)
-#                 csv = CsvGenerator(reestr)
-#                 csv.generate_csv()
-#                 move_to(args.f, "arh")
-#             else:
-#                 logging.error(f"Неподходящий файл {os.path.basename(args.f)}")
-#                 move_to(args.f, "bad")
-#         elif os.path.isdir(args.f):
-#             for file in os.listdir(args.f):
-#                 file = os.path.join(args.f, file)
-#                 if os.path.isfile(file):
-#                     if file.endswith(".xml"):
-#                         try:
-#                             file_handler = IncomingReestr(file)
-#                             csv = CsvGenerator(file_handler)
-#                             csv.generate_csv()
-#                             move_to(file, "arh")
-#                         except ValueError as e:
-#                             logging.error(
-#                                 f"Ошибка при обработке файла {file}: {e}")
-#                             move_to(file, "bad")
-#                     else:
-#                         logging.error(f"Неподходящий файл {file}")
-#                         move_to(file, "bad")
-#                 else:
-#                     continue
-#     else:
-#         print("Не указан путь к файлу. Укажите путь через параметр -f")
-
 if __name__ == "__main__":
     main()
