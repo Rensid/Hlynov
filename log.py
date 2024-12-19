@@ -9,9 +9,7 @@ class LogConfig:
 
     def create_dir_for_logs(self, path):
         base_dir = os.path.dirname(path)
-        print(base_dir)
         log_dir = os.path.join(base_dir, "log")
-        print(log_dir)
         os.makedirs(log_dir, exist_ok=True)
         return os.path.join(log_dir, "logs.log")
 

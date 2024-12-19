@@ -132,12 +132,12 @@ class Payer:
         # таким образом мы обрабаатываем случай, когда сумма не указана или указана неправильно
         try:
             if summa:
-                summa = float(summa)
+                summa = round(float(summa), 2)
                 if summa <= 0:
                     logging.error(
                         f"Сумма должна быть положительной: {summa} у пользователя {self.full_name}")
                     return None
-                return f"{summa:.2f}"
+                return summa
             return ''
         except ValueError:
             logging.error(
